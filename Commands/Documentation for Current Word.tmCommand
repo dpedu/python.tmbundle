@@ -20,44 +20,30 @@ export PYTHONPATH="$TM_SUPPORT_PATH/lib:$PYTHONPATH"
 # coding: UTF-8
 import sys
 from sys import exit
-
+from os import system
+from urllib import urlencode
+import re
 import tm_helpers
 import webpreview
-import docmate
-import dialog
-
-docmate.launch_pydoc_server()
 
 # get current dotted word from the env
 word = tm_helpers.current_word(r"[A-Za-z0-9_\.]*")
 
-if not word:
-    print "&lt;meta http-equiv='Refresh' content='0;URL=%s'&gt;" % docmate.pydoc_url()[0]
-else:
-    library_docs = docmate.library_docs(word)
-    local_docs = docmate.local_docs(word)
-    if library_docs:
-        print webpreview.html_header("DocMate", "Python")
-        print "&lt;h3&gt;Python Library Documentation&lt;/h3&gt;\n"
-        print "&lt;ol style='list-style-type: lower-alpha;'&gt;\n"
-        for n, opt in enumerate(library_docs):
-            desc, url = opt
-            accesskey = chr(ord("a") + n)
-            print '\t&lt;li&gt;&lt;a href="%s" accesskey="%s"&gt;%s&lt;/a&gt;&lt;/li&gt;\n' % (url, accesskey, desc)
-        print "&lt;/ol&gt;\n"
-    if local_docs and library_docs:
-        print "&lt;h3&gt;Pydoc Documentation&lt;/h3&gt;"
-        print "&lt;ol style='list-style-type: decimal;'&gt;\n"
-        for n, opt in enumerate(local_docs):
-            desc, url = opt
-            accesskey = chr(ord("1") + n)
-            print '\t&lt;li&gt;&lt;a href="%s" accesskey="%s"&gt;%s&lt;/a&gt;&lt;/li&gt;\n' % (url, accesskey, desc)
-        print "&lt;/ol&gt;\n"
-        print webpreview.html_footer()
-    elif local_docs and not library_docs:
-        print "&lt;meta http-equiv='Refresh' content='0;URL=%s'&gt;" % local_docs[0][1]
+def open_url(url):
+    system("open '%s'" % url)
+
+if word:
+    isModule = re.compile(r'([a-zA-Z0-9]+\.?)+')
+    if isModule.match(word):
+        try:
+            __import__(word)
+            open_url("https://docs.python.org/2/library/%s.html" % word.lower())
+        except:
+            open_url("https://docs.python.org/2/search.html?%s" % urlencode({'q':word}))
     else:
-        print "&lt;meta http-equiv='Refresh' content='0;URL=%s'&gt;" % docmate.pydoc_url()[0]
+        open_url("https://docs.python.org/2/search.html?%s" % urlencode({'q':word}))
+    exit(0)
+exit(1)
 PYTHON
 </string>
 	<key>input</key>
